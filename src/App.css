@@ -12,7 +12,7 @@ body {
 }
 
 .padding-40-24 {
-  padding: 40px 24px;
+  padding: 40px 24px 0px 24px;
 }
 
 .welcome-text {
@@ -74,4 +74,26 @@ body {
 
 .max-width-500 {
   max-width: 500px !important;
+}
+
+.centered-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.flex-direction-column {
+  flex-direction: column;
+}
+
+@media screen and (max-width: 600px) {
+  .padding-40-24 {
+    padding: 40px 24px !important;
+  }
+
+  .centered-container {
+    display: block !important;
+  }
 }
