@@ -1,10 +1,14 @@
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import Visibility from '@mui/icons-material/Visibility';
 import { Box, Button, Checkbox, Container, FormControl, FormControlLabel, FormHelperText, FormLabel, InputAdornment, InputLabel, OutlinedInput, Radio, RadioGroup, TextField, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { SignUpDetail } from '../@types/users';
+import { axiosInstance } from '../utils/axiosConfig';
+import { useSnackbar } from './snackbar';
 
 function SignUp() {
   const [firstName, setFirstName] = useState<string>('');
@@ -13,15 +17,59 @@ function SignUp() {
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [mobile, setMobile] = useState<number | null>(null);
+  const [mobile, setMobile] = useState<string>('');
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [profileUrl, setProfileUrl] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [check, setCheck] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const { openSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleClickShowConfirmPassword = () => setShowConfirmPassword((show) => !show);
+
+  const checkMobile = (value: string) => {
+    if (/^\d*$/.test(value)) {
+      setMobile(value);
+    }
+  }
 
   const handleSubmit = () => {
     setIsSubmitted(true);
+
+    if (firstName && lastName && email && password && (password === confirmPassword) && gender && mobile && dob && address && check) {
+      const dobObject = dayjs(dob);
+      const formattedDate = dobObject.format('YYYY-MM-DD');
+
+      const userDetail: SignUpDetail = {
+        firstName,
+        lastName,
+        email,
+        password,
+        gender,
+        mobile,
+        formattedDate,
+        profileUrl: profileUrl || null,
+        address
+      };
+
+      axiosInstance.post('sign-up', userDetail).then((res) => {
+        if (res.data) {
+          openSnackbar('User Created Successfully', 'snackbar-success');
+          navigate('/');
+        }
+      }).catch((err) => {
+        openSnackbar(err.response.data, 'snackbar-error');
+      })
+    }
   }
 
   return (
@@ -71,8 +119,8 @@ function SignUp() {
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  error={isSubmitted && !email}
-                  helperText={isSubmitted && !email && 'Enter Email'}
+                  error={(isSubmitted && !email) || (isSubmitted && !validateEmail(email))}
+                  helperText={(isSubmitted && !email && 'Enter Email') || (isSubmitted && !validateEmail(email) && 'Enter valid email')}
                 />
               </FormControl>
             </div>
@@ -81,15 +129,17 @@ function SignUp() {
               <FormControl className="input-field" variant="outlined">
                 <OutlinedInput
                   id='outlined-adornment-password'
-                  type='password'
+                  type={showPassword ? 'text' : 'password'}
                   endAdornment={
                     <InputAdornment position="end">
-                      <VisibilityOffIcon />
+                      {showPassword ? <VisibilityOffIcon onClick={handleClickShowPassword} sx={{ cursor: 'pointer' }} /> : <Visibility onClick={handleClickShowPassword} sx={{ cursor: 'pointer' }} />}
                     </InputAdornment>
                   }
                   placeholder="Create a password"
                   name="password"
                   value={password}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
                   onChange={(e) => setPassword(e.target.value)}
                   error={isSubmitted && !password}
                 />
@@ -100,15 +150,17 @@ function SignUp() {
               <FormControl className="input-field" variant="outlined">
                 <OutlinedInput
                   id='outlined-adornment-confirm-password'
-                  type='password'
+                  type={showConfirmPassword ? 'text' : 'password'}
                   endAdornment={
                     <InputAdornment position="end">
-                      <VisibilityOffIcon />
+                      {showConfirmPassword ? <VisibilityOffIcon onClick={handleClickShowConfirmPassword} sx={{ cursor: 'pointer' }} /> : <Visibility onClick={handleClickShowConfirmPassword} sx={{ cursor: 'pointer' }} />}
                     </InputAdornment>
                   }
                   placeholder="Confirm password"
                   name="confirmPassword"
                   value={confirmPassword}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   error={isSubmitted && !confirmPassword}
                 />
@@ -139,9 +191,10 @@ function SignUp() {
                   placeholder="1234567890"
                   name="mobile"
                   value={mobile}
-                  onChange={(e) => setMobile(Number(e.target.value))}
+                  onChange={(e) => checkMobile(e.target.value)}
                   error={isSubmitted && !mobile}
                   helperText={isSubmitted && !mobile && 'Enter Mobile Number'}
+                  inputProps={{ maxLength: 10, minLength: 10 }}
                 />
               </FormControl>
             </div>
