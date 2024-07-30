@@ -1,10 +1,10 @@
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Visibility from '@mui/icons-material/Visibility';
-import { Box, Button, Checkbox, Container, FormControl, FormControlLabel, FormHelperText, FormLabel, InputAdornment, InputLabel, OutlinedInput, Radio, RadioGroup, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Container, FormControl, FormControlLabel, FormHelperText, FormLabel, Grid, InputAdornment, InputLabel, OutlinedInput, Radio, RadioGroup, TextField, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SignUpDetail } from '../@types/users';
 import { axiosInstance } from '../utils/axiosConfig';
@@ -25,8 +25,17 @@ function SignUp() {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(true);
   const { openSnackbar } = useSnackbar();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (firstName && lastName && email && password && confirmPassword && gender && mobile && dob && address && check) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [firstName, lastName, email, password, confirmPassword, gender, mobile, dob, address, check]);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -45,7 +54,7 @@ function SignUp() {
   const handleSubmit = () => {
     setIsSubmitted(true);
 
-    if (firstName && lastName && email && password && (password === confirmPassword) && gender && mobile && dob && address && check) {
+    if (firstName && lastName && email && password && (password === confirmPassword) && gender && mobile && mobile.length == 10 && dob && address && check) {
       const dobObject = dayjs(dob);
       const formattedDate = dobObject.format('YYYY-MM-DD');
 
@@ -76,10 +85,14 @@ function SignUp() {
     <>
       <Box className="centered-container">
         <Container className="padding-40-24 max-width-500">
-          <Typography className="sign-up-text font-weight-900 mb-16">Sign up</Typography>
-          <Typography className="create-account-text font-size-12">Create an account to get started</Typography>
-          <div className="margin-top-bottom-24">
-            <div>
+          <Grid container spacing={1}>
+            <Grid item xs={12}>
+              <Typography className="sign-up-text font-weight-900 mb-16">Sign up</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography className="create-account-text font-size-12">Create an account to get started</Typography>
+            </Grid>
+            <Grid item xs={6}>
               <InputLabel className="input-label font-size-12">First Name</InputLabel>
               <FormControl className="input-field" variant="outlined" style={{ marginBottom: isSubmitted && !firstName ? 0 : 16 }}>
                 <TextField
@@ -93,8 +106,8 @@ function SignUp() {
                   helperText={isSubmitted && !firstName && 'Enter First Name'}
                 />
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={6}>
               <InputLabel className="input-label font-size-12">Last Name</InputLabel>
               <FormControl className="input-field" variant="outlined" style={{ marginBottom: isSubmitted && !lastName ? 0 : 16 }}>
                 <TextField
@@ -108,8 +121,8 @@ function SignUp() {
                   helperText={isSubmitted && !lastName && 'Enter Last Name'}
                 />
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={12}>
               <InputLabel className="input-label font-size-12">Email Address</InputLabel>
               <FormControl className="input-field" variant="outlined" style={{ marginBottom: isSubmitted && !email ? 0 : 16 }}>
                 <TextField
@@ -123,8 +136,8 @@ function SignUp() {
                   helperText={(isSubmitted && !email && 'Enter Email') || (isSubmitted && !validateEmail(email) && 'Enter valid email')}
                 />
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={6}>
               <InputLabel className="input-label font-size-12" htmlFor="outlined-adornment-password">Password</InputLabel>
               <FormControl className="input-field" variant="outlined">
                 <OutlinedInput
@@ -145,8 +158,9 @@ function SignUp() {
                 />
                 <FormHelperText sx={{ marginLeft: 0, color: '#d32f2f' }}>{isSubmitted && !password && 'Enter Password'}</FormHelperText>
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={6}>
+              <InputLabel className="input-label font-size-12" htmlFor="outlined-adornment-password" sx={{ visibility: 'hidden' }}>Confirm Password</InputLabel>
               <FormControl className="input-field" variant="outlined">
                 <OutlinedInput
                   id='outlined-adornment-confirm-password'
@@ -170,8 +184,8 @@ function SignUp() {
                     <FormHelperText sx={{ marginLeft: 0, color: '#d32f2f' }}>{isSubmitted && confirmPassword && password !== confirmPassword && 'Password and Confirm Password does not match'}</FormHelperText>
                 }
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={12}>
               <FormControl className="input-field" style={{ marginBottom: isSubmitted && !gender ? 0 : 16 }}>
                 <FormLabel className="input-label font-size-12">Gender</FormLabel>
                 <RadioGroup sx={{ flexDirection: 'row' }} name='gender' value={gender} onChange={(e) => setGender(e.target.value)}>
@@ -181,8 +195,8 @@ function SignUp() {
                 </RadioGroup>
                 <FormHelperText sx={{ marginLeft: 0, color: '#d32f2f' }}>{isSubmitted && !gender && 'Please Select Gender'}</FormHelperText>
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={6}>
               <InputLabel className="input-label font-size-12">Mobile</InputLabel>
               <FormControl className="input-field" variant="outlined" style={{ marginBottom: isSubmitted && !mobile ? 0 : 16 }}>
                 <TextField
@@ -192,13 +206,13 @@ function SignUp() {
                   name="mobile"
                   value={mobile}
                   onChange={(e) => checkMobile(e.target.value)}
-                  error={isSubmitted && !mobile}
-                  helperText={isSubmitted && !mobile && 'Enter Mobile Number'}
-                  inputProps={{ maxLength: 10, minLength: 10 }}
+                  error={(isSubmitted && !mobile) || (isSubmitted && mobile.length < 10)}
+                  helperText={(isSubmitted && !mobile && 'Enter Mobile Number') || (isSubmitted && mobile.length < 10 && 'Mobile number must have 10 digits')}
+                  inputProps={{ maxLength: 10 }}
                 />
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={6}>
               <InputLabel className="input-label font-size-12">DOB</InputLabel>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -209,8 +223,8 @@ function SignUp() {
                 />
                 <FormHelperText sx={{ marginLeft: 0, color: '#d32f2f' }}>{isSubmitted && !dob && 'Enter DOB'}</FormHelperText>
               </LocalizationProvider>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={12}>
               <InputLabel className="input-label font-size-12">Profile Url (optional)</InputLabel>
               <FormControl className="input-field" variant="outlined" style={{ marginBottom: 16 }}>
                 <TextField
@@ -221,8 +235,8 @@ function SignUp() {
                   onChange={(e) => setProfileUrl(e.target.value)}
                 />
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={12}>
               <InputLabel className="input-label font-size-12">Address</InputLabel>
               <FormControl className="input-field" variant="outlined" style={{ marginBottom: isSubmitted && !address ? 0 : 16 }}>
                 <TextField
@@ -238,8 +252,8 @@ function SignUp() {
                   helperText={isSubmitted && !address && 'Enter Address'}
                 />
               </FormControl>
-            </div>
-            <div>
+            </Grid>
+            <Grid item xs={12}>
               <FormControl className='input-field'>
                 <FormControlLabel control={<Checkbox checked={check} onChange={(e) => setCheck(e.target.checked)} />} label={
                   <>
@@ -251,14 +265,14 @@ function SignUp() {
                 } />
                 <FormHelperText sx={{ marginLeft: 0, color: '#d32f2f' }}>{isSubmitted && !check && 'Please Confirm Terms and Conditions'}</FormHelperText>
               </FormControl>
-            </div>
-          </div>
-          <div className="margin-top-bottom-24">
-            <Button className="primary-button mb-16" variant="contained" color="primary" onClick={handleSubmit}>Sign up</Button>
-            <div className='not-a-member-section'>
-              <Typography variant='caption'>Already a member? <Link to='/' className='text-decoration-none'>Sign in</Link></Typography>
-            </div>
-          </div>
+            </Grid>
+            <Grid item xs={12}>
+              <Button className="primary-button mb-16" variant="contained" color="primary" disabled={disabled} onClick={handleSubmit}>Sign up</Button>
+              <div className='text-center'>
+                <Typography variant='caption'>Already a member? <Link to='/' className='text-decoration-none'>Sign in</Link></Typography>
+              </div>
+            </Grid>
+          </Grid>
         </Container>
       </Box>
     </>

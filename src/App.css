@@ -50,7 +50,7 @@ body {
   text-decoration: none !important;
 }
 
-.not-a-member-section {
+.text-center {
   text-align: center !important;
 }
 
@@ -98,6 +98,25 @@ body {
 
 .snackbar-error {
   background-color: red !important;
+}
+
+.bottom-nav-icons {
+  height: 20px;
+  width: 20px;
+  margin-bottom: 8px;
+}
+
+.Mui-selected .bottom-nav-icons {
+  filter: invert(33%) sepia(43%) saturate(4044%) hue-rotate(196deg) brightness(91%) contrast(81%) !important;
+}
+
+.bottom-nav-section {
+  height: 88px !important;
+  justify-content: space-between !important;
+}
+
+.min-width-60 {
+  min-width: 60px !important;
 }
 
 @media screen and (max-width: 600px) {
